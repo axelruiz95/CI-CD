@@ -1,0 +1,29 @@
+service: backend #El nombre de la lambda sera backend-enviroment-proyecto
+frameworkVersion: "^3.40.0"
+# este es un comentario para el commit
+provider:
+  name: aws
+  runtime: nodejs20.x #Colocar Lenguaje a usar revisar documentación de nuevas versiones
+  region: us-east-1
+  stage: ${env:ENVIROMENT}
+  deploymentBucket:
+    name: serverless-deploy
+    serverSideEncryption: AES256
+  iam:
+    role: arn:aws:iam::272772253521:role/serverless-test-dev-us-east-1-lambdaRole #Usuario y rol Asignados en AWS
+
+functions:
+  Proyecto: #Colocar nombre del proyecto
+    handler: ./dist/app.handler
+    vpc:
+      securityGroupIds:
+        - ${env:SG_LAMBDA_1}
+        - ${env:SG_LAMBDA_2}
+      subnetIds:
+        - ${env:SUBNET_1}
+        - ${env:SUBNET_2}
+    environment:
+      ENVIROMENT: "cloud"
+      #Definir variables de entorno a usar 
+    events:
+      - httpApi: "*"
