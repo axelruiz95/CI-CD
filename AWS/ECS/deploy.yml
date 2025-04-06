@@ -1,4 +1,4 @@
-name: Deploy Dev Jac CMS Payload Dev 
+name: Deploy Dev Payload Dev 
 
 on:
   push:
@@ -84,7 +84,7 @@ jobs:
         id: ecs-update-task-definition
         run: |
           aws ecs register-task-definition \
-            --cli-input-json file://infraestructure/task-jac-cms-dev.json
+            --cli-input-json file://infraestructure/task.json #Colocar nombre de task a usar en el ECS
           
       - name: Update service  
         id: ecs-deploy-service
