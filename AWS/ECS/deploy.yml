@@ -93,5 +93,5 @@ jobs:
             --cluster $ECS_CLUSTER \
             --service $ECS_SERVICE \
             --task-definition $ECS_TASK_DEFINITION \
-            --desired-count 1 \
+            --desired-count 1 \ # modificar las Task que requieras
             --force-new-deployment
