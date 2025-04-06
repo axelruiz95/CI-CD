@@ -1,1 +1,65 @@
+name: Build & deploy develop
+on:
+    push:
+        branches:
+            - develop
+    workflow_dispatch: #Opcional para despliegues manuales
+permissions:
+  id-token: write 
+  contents: read
 
+env: #Version 3.4 o superior env ya se coloca dentro del deploy
+  #SERVERLESS_ACCESS_KEY: ${{secrets.SERVERLESS_ACCESS_KEY}} Esta variable ya no se usa en versiones 3.4 o superior del serverless
+  SUBNET_1: ${{ vars.PRIVATE_SUBNET_1 }}
+  SUBNET_2: ${{ vars.PRIVATE_SUBNET_2 }}
+  SG_LAMBDA_1: ${{ vars.SG_1 }}
+  SG_LAMBDA_2: ${{ vars.SG_2 }}
+  ENVIROMENT: ${{ vars.STAGE }}
+  
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-22.04
+    environment: develop #Colocar el nombre de Environments de Github
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+            role-to-assume: arn:aws:iam::272772253521:role/Role_GithubActions #Colocar usario y rol requerido en AWS
+            role-session-name: GitHub_to_AWS_via_FederatedOIDC
+            aws-region: us-east-1
+
+      - name: Cache modules
+        uses: actions/cache@v4
+        id: yarn-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/.package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
+          
+      - name: Use Node.js 22.x #modificar el lenguaje a usar
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Compile project
+        run: npm run build
+
+      - name: Install Serverless CLI
+        run: npm install -g serverless@^3.40.0
+      - name: Deploy using Serverless CLI
+        run: serverless deploy
+        env:
+          SUBNET_1: ${{ vars.PRIVATE_SUBNET_1 }}
+          SUBNET_2: ${{ vars.PRIVATE_SUBNET_2 }}
+          SG_LAMBDA_1: ${{ vars.SG_1 }}
+          SG_LAMBDA_2: ${{ vars.SG_2 }}
+          ENVIROMENT: ${{ vars.STAGE }}
+          AWS_DEFAULT_REGION: us-east-1
+          AWS_REGION: us-east-1
