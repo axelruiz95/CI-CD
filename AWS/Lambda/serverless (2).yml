@@ -1,0 +1,38 @@
+service: jac-backend-indigital
+frameworkVersion: "^3.40.0"
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  deploymentBucket:
+    name: serverless-deploy-jac-giant-motors
+    serverSideEncryption: AES256
+  iam:
+    role: arn:aws:iam::272772253521:role/serverless-test-dev-us-east-1-lambdaRole
+
+functions:
+  indigital:
+    name: jac-backend-indigital-${env:ENVIROMENT}
+    handler: ./dist/index.handler
+    vpc:
+      securityGroupIds:
+        - ${env:SG_LAMBDA_1}
+        - ${env:SG_LAMBDA_2}
+      subnetIds:
+        - ${env:SUBNET_1}
+        - ${env:SUBNET_2}
+    environment:
+      ENVIROMENT: ${env:STAGE}
+    events:
+    - httpApi:
+          path: /{proxy+}
+          method: ANY
+resources:
+  Resources:
+    CustomHttpApi:
+      Type: AWS::ApiGatewayV2::Api
+      Properties:
+        Name: jac-backend-indigital-${sls:stage}
+        ProtocolType: HTTP
