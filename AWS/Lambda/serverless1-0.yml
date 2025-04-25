@@ -1,4 +1,4 @@
-service: jac-backend-indigital
+service: jac-backend-proyecto  #Cambiar nombre de proyecto, para nombre lambda
 frameworkVersion: "^3.40.0"
 
 provider:
@@ -7,14 +7,14 @@ provider:
   region: us-east-1
   stage: ${opt:stage, 'dev'}
   deploymentBucket:
-    name: serverless-deploy-jac-giant-motors
+    name: serverless-deploy
     serverSideEncryption: AES256
   iam:
-    role: arn:aws:iam::272772253521:role/serverless-test-dev-us-east-1-lambdaRole
+    role: arn:aws:iam::272772253521:role/serverless-test-dev-us-east-1-lambdaRole # colocar arm del usuario con el rol necesario
 
 functions:
   indigital:
-    name: jac-backend-indigital-${env:ENVIROMENT}
+    name: jac-backend-proyecto-${env:ENVIROMENT}
     handler: ./dist/index.handler
     vpc:
       securityGroupIds:
@@ -34,5 +34,5 @@ resources:
     CustomHttpApi:
       Type: AWS::ApiGatewayV2::Api
       Properties:
-        Name: jac-backend-indigital-${sls:stage}
+        Name: jac-backend-proyecto-${sls:stage}
         ProtocolType: HTTP
