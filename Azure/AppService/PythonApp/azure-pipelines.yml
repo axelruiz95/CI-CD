@@ -1,0 +1,30 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.10'
+
+- script: pip install -r requirements.txt
+  displayName: 'Install dependencies'
+
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+    includeRootFolder: false
+    archiveType: zip
+    archiveFile: '$(Build.ArtifactStagingDirectory)/deploy.zip'
+
+- publish: '$(Build.ArtifactStagingDirectory)/deploy.zip'
+  artifact: drop
+
+- task: AzureWebApp@1
+  inputs:
+    appType: webApp
+    azureSubscription: '$(AZURE_SUBSCRIPTION)'
+    appName: '$(AZURE_WEBAPP_NAME)'
+    package: '$(Build.ArtifactStagingDirectory)/deploy.zip'
